@@ -92,10 +92,11 @@ def calculateStats():
 
 
 
-            print "Transforming stats to new_stats"
+            #print "Transforming stats to new_stats"
 
             #print "\n\nstats[]0 before"
             #print stats[1]
+            stats1['Player Kills'] = []
 
             for i, j in zip(stats, xrange(len(stats))):
                 #print "\n\nBefore replacements"                
@@ -108,7 +109,18 @@ def calculateStats():
 
                 i['Player1']['Number'] = stats1[i['Player1']['Name']]
                 i['Player2']['Number'] = stats1[i['Player2']['Name']]
+
+                t_dict = {}
+                t_dict[i['Player1']['Name']] = i['Player1']['Kills']
+
+                stats1['Player Kills'].append(t_dict)
+
+                t_dict = {}
+                t_dict[i['Player2']['Name']] = i['Player2']['Kills']
+
+                stats1['Player Kills'].append(t_dict)                
                 
+                # TODO: Create a counter to count and map total kills to each player name
 
                 #print "\nAfter replacements"
                 #print i['Player1']
@@ -124,32 +136,28 @@ def calculateStats():
             #    print "Match Info:"
             #    print i
 
-            print "Tranformed stats"
+            print "\nTranformed stats"
             print "stats"
             print stats
             print "\n\nstats1"
             print stats1
 
-            # Remove unwanted keys from dictionary
-#            for i in xrange(len(stats1['Players'])):
-#                #print i+1
-#                del stats1[i+1]
+            leaderboard = {}
 
             # Count how many wins for each player
             cnt_wins = collections.Counter([i['Winner'] for i in stats])
             #print cnt_wins
             stats1['Total number of wins'] = 0
+            stats1['Player Wins'] = []
             for i in xrange(len(stats1['Players'])):
                 #print i
-                stats1['Player ' + str(i+1) + ' Wins'] = cnt_wins[i+1]
+                #stats1['Player ' + str(i+1) + ' Wins'] = cnt_wins[i+1]
+                tmp_dict = {}
+                tmp_dict[cnt_wins[i+1]] = stats1['Players'][i]
+                stats1['Player Wins'].append(tmp_dict)
+                leaderboard['Player ' + str(i+1) + ' Wins'] = cnt_wins[i+1]
 
-                stats1['Total number of wins'] += stats1['Player ' + str(i+1) + ' Wins']
-
-                # Rank players by most wins to least wins
-
-                stats1['Rank'] = []
-
-
+                stats1['Total number of wins'] += cnt_wins[i+1]
 
         if len(stats1['Players']) == 2:
             # Count how many P1 and P2 winners
@@ -170,12 +178,41 @@ def calculateStats():
             stats1['Player 2 Win to lose Ratio'] = stats1['Player 2 Wins'] / (stats1['Total number of games'] - stats1['Player 2 Wins'] + 0.0)
             #print [i['Winner'] for i in stats]
 
+        # TODO: Calculate leaderboard based on overall stats
+        from operator import itemgetter
+
+        #print list(tuple(i,j) for i,j in stats1['Player Wins'])
+        #print list([tuple(i) for i in stats1['Player Wins']])
+        sorted_l = sorted(list(i.items()[0] for i in stats1['Player Wins']), key=itemgetter(0), reverse=True)
+        #print sorted_l
+        print "\n\nLEADERBOARD:"
+        print "===================="
+        print "Name", "\t\t\t", "Wins"
+        for i,j in sorted_l:
+            print j, "\t\t", i
+
+        # Remove unwanted keys from dictionary
+        #Remove the 1,2,3 keys
+        for i in xrange(len(stats1['Players'])):
+            #print i+1
+            del stats1[i+1]
+
+        #Remove the player name keys
+        for i in stats1['Players']:
+            #print i+1
+            del stats1[i]
+
+        # Remove player names
+        del stats1['Players']
+        del stats1['Player Wins']
+
+
         print "\n\nFINAL STATS:"
 
         for k, v in sorted(stats1.iteritems()):
             print "%s : %s" % (k, v)
 
-        # TODO: Calculate leaderboard based on overall stats
+
 
 def printUsage():
     """
@@ -244,8 +281,8 @@ if __name__ == '__main__':
     else:
         # Correct number of arguments provided
         # Call main function
-        print "Arguments provided:"
-        for a in sys.argv:
-            print a
+        #print "Arguments provided:"
+        #for a in sys.argv:
+        #    print a
         main(sys.argv)
 
