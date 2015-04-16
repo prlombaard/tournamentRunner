@@ -71,7 +71,7 @@ def calculateStats():
             stats1['Players'].append(i['Player2']['Name'])
         
         stats1['Players'] = sorted(set(stats1['Players']))
-        stats1['TPlayers'] = {}
+        #stats1['TPlayers'] = {}
 
         # Test how many players have played inthe tournament
         if len(stats1['Players']) > 2:
@@ -83,18 +83,61 @@ def calculateStats():
                 #tdict = {}
                 #tdict[str(s)] = stats1['Players'][i]
                 #print tdict
-                stats1['TPlayers'][s] = stats1['Players'][i]
+                
+                #stats1['TPlayers'][s] = stats1['Players'][i]
+                #print stats1['TPlayers'][s]
+                stats1[i+1] = stats1['Players'][i]
+                stats1[stats1['Players'][i]] = i+1
+                #print stats1[stats1['Players'][i]]
 
-                print "Transforming stats to new_stats"
 
-            new_stats = []
 
-            for i in stats:
-                p1_pop = i['Player1']
-                p1_num_pop = p1_pop.pop('Number')
-                p2_pop = i['Player2']
-                print p1_pop
-                print p2_pop
+            print "Transforming stats to new_stats"
+
+            #print "\n\nstats[]0 before"
+            #print stats[1]
+
+            for i, j in zip(stats, xrange(len(stats))):
+                #print "\n\nBefore replacements"                
+                #print i['Player1']
+                #print i['Player2']
+                #print "Winner: ", "Player" + str(i['Winner'])
+                #print "Global Winner: ", i["Player" + str(i['Winner'])]['Name']
+                #print "Global Winner: ", stats1[i["Player" + str(i['Winner'])]['Name']]
+                stats[j]['Winner'] = stats1[i["Player" + str(i['Winner'])]['Name']]
+
+                i['Player1']['Number'] = stats1[i['Player1']['Name']]
+                i['Player2']['Number'] = stats1[i['Player2']['Name']]
+                
+
+                #print "\nAfter replacements"
+                #print i['Player1']
+                #print i['Player2']
+                #print i['Winner']
+                
+#            print "\n\nstats[]0 after"
+#            print stats[1]
+
+            #print "\nAFTER\n"
+
+            #for i in stats:
+            #    print "Match Info:"
+            #    print i
+
+            print "Tranformed stats"
+            print "stats"
+            print stats
+            print "\n\nstats1"
+            print stats1
+
+            # Remove unwanted keys from dictionary
+            for i in xrange(len(stats1['Players'])):
+                print i+1
+                del stats1[i+1]
+                
+
+
+
 
 
                 # TODO: Reorganize the original stats array. Replace the Original Player1 and PLayer 2 dictionary Keys with the correct PlayerX and PLayerY
@@ -129,9 +172,9 @@ def printUsage():
     """
     This function displays the usage instructions to run the script with example arguments
     """
-    print 'Python Calculate Stats usage:'
+    print 'Python Tournament Runner and post Tournament Statistics generator usage:'
     print
-    print 'python calculate_stats.py bot1name, bot2name, bot2name'
+    print 'python tournameRunner.py bot1name, bot2name, bot2name'
     print
 
 def main(args, skipTournament=True, tournaments_to_play=3, wait_for_user_input=False):
