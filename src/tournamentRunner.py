@@ -75,7 +75,7 @@ def calculateStats():
 
         # Test how many players have played inthe tournament
         if len(stats1['Players']) > 2:
-            print "Calculating %d players' stats" % (len(stats1['Players'])+1)
+            print "Calculating %d players' stats" % (len(stats1['Players']))
             for i in xrange(0,len(stats1['Players'])):
                 s = "Player" + str(i+1)
                 #print s
@@ -131,18 +131,25 @@ def calculateStats():
             print stats1
 
             # Remove unwanted keys from dictionary
+#            for i in xrange(len(stats1['Players'])):
+#                #print i+1
+#                del stats1[i+1]
+
+            # Count how many wins for each player
+            cnt_wins = collections.Counter([i['Winner'] for i in stats])
+            #print cnt_wins
+            stats1['Total number of wins'] = 0
             for i in xrange(len(stats1['Players'])):
-                print i+1
-                del stats1[i+1]
-                
+                #print i
+                stats1['Player ' + str(i+1) + ' Wins'] = cnt_wins[i+1]
+
+                stats1['Total number of wins'] += stats1['Player ' + str(i+1) + ' Wins']
+
+                # Rank players by most wins to least wins
+
+                stats1['Rank'] = []
 
 
-
-
-
-                # TODO: Reorganize the original stats array. Replace the Original Player1 and PLayer 2 dictionary Keys with the correct PlayerX and PLayerY
-                # TODO: Reorganize the original stats array. Replace the Original Winner number 1 and 2 with the correct players unique tournament number
-        
 
         if len(stats1['Players']) == 2:
             # Count how many P1 and P2 winners
@@ -163,7 +170,9 @@ def calculateStats():
             stats1['Player 2 Win to lose Ratio'] = stats1['Player 2 Wins'] / (stats1['Total number of games'] - stats1['Player 2 Wins'] + 0.0)
             #print [i['Winner'] for i in stats]
 
-        for k, v in stats1.iteritems():
+        print "\n\nFINAL STATS:"
+
+        for k, v in sorted(stats1.iteritems()):
             print "%s : %s" % (k, v)
 
         # TODO: Calculate leaderboard based on overall stats
