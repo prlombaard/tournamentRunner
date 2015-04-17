@@ -5,6 +5,7 @@ import subprocess
 import json
 import sys
 import collections
+import time
 
 pipe_r, pipe_w = os.pipe()
 
@@ -13,7 +14,7 @@ def roundRobin():
     Runs SpaceInvadersDuel
     """
 
-def calculateStats():
+def calculateStats(tournament_times):
     print "Gathering stats"
 
     stats = []
@@ -28,6 +29,8 @@ def calculateStats():
                 #print sum(getsize(join(root, name)) for name in files),
                 #print name
 
+                i = 0
+
                 # read matchinfo.json to dictionary
                 with open(join(root, name), "r") as matchInfoFile:
                     match_info = json.loads(matchInfoFile.read())
@@ -39,9 +42,14 @@ def calculateStats():
                     new_match_info['Winner'] = match_info['Winner']
                     new_match_info['Rounds'] = match_info['Rounds']
 
-                    # TODO: change the way that the players are added to the stats list/dictionary
                     new_match_info['Player1'] = match_info['Players'][0]
                     new_match_info['Player2'] = match_info['Players'][1]
+
+                    # FIXME: Issue #4, Possible bug, this assumes that the amount of directories to be walked is equal to the number of games that was played
+
+                    i += 1
+
+                    new_match_info['Time per game'] = tournament_times[i]
 
                     #print new_match_info
                     stats.append(new_match_info)
@@ -54,7 +62,7 @@ def calculateStats():
             print "Match Info:"
             print i
 
-        # TODO: Currently stats assumes only two unique players that played games against each other, change stats to include 2+player stats
+        # Fixed: Currently stats assumes only two unique players that played games against each other, change stats to include 2+player stats
         stats1 = {}
         stats1['Total Rounds'] = sum([ i['Rounds'] for i in stats])
         stats1['Minimum Rounds'] = min([ i['Rounds'] for i in stats])
@@ -120,7 +128,7 @@ def calculateStats():
 
                 stats1['Player Kills'].append(t_dict)                
                 
-                # TODO: Create a counter to count and map total kills to each player name
+                # TODO: Issue #5, Create a counter to count and map total kills to each player name
 
                 #print "\nAfter replacements"
                 #print i['Player1']
@@ -178,7 +186,7 @@ def calculateStats():
             stats1['Player 2 Win to lose Ratio'] = stats1['Player 2 Wins'] / (stats1['Total number of games'] - stats1['Player 2 Wins'] + 0.0)
             #print [i['Winner'] for i in stats]
 
-        # TODO: Calculate leaderboard based on overall stats
+        # FIXED: Calculate leaderboard based on overall stats
         from operator import itemgetter
 
         #print list(tuple(i,j) for i,j in stats1['Player Wins'])
@@ -220,14 +228,21 @@ def printUsage():
     """
     print 'Python Tournament Runner and post Tournament Statistics generator usage:'
     print
-    print 'python tournameRunner.py bot1name, bot2name, bot2name'
+    print 'python tournamentRunner.py bot1name, bot2name, bot2name'
     print
 
-def main(args, skipTournament=True, tournaments_to_play=3, wait_for_user_input=False):
-#def main(args, skipTournament=False, tournaments_to_play=1, wait_for_user_input=True):
+# TODO:
+
+# This is used when the script must only calculate statistics, will possibly crash beacuse timings are now not done
+#def main(args, skipTournament=True, tournaments_to_play=3, wait_for_user_input=False):
+
+# This is used when the script must run a tournament
+# TODO: Issue #6, Add some of the arguments of this function to the arguments passed into the main script from the command line
+def main(args, skipTournament=False, tournaments_to_play=5, wait_for_user_input=True):
     if not skipTournament:
         bot_paths = []
         # test if all bot directories are correct
+        # FIXME: Issue #7, Possible bug, the following part assumes that the directories to access is relative to the root path, the root being the testharness folder
         for dirname in args:
             if os.access(dirname, os.F_OK):
                 path = dirname + '/' + "run.bat"
@@ -238,7 +253,7 @@ def main(args, skipTournament=True, tournaments_to_play=3, wait_for_user_input=F
             else:
                 print "%s can NOT be accessed and is excluded from the tournament" % dirname
 
-        # TODO: Check that if there is only one valid bot remaining that can be accessed then cancel the tournament
+        # TODO: Issue #2, Check that if there is only one valid bot remaining that can be accessed then cancel the tournament
 
         print "Bots and play order that will take part in tournament"
         print bot_paths
@@ -251,12 +266,22 @@ def main(args, skipTournament=True, tournaments_to_play=3, wait_for_user_input=F
         if wait_for_user_input:
             s = raw_input('press ENTER to continue')
 
+        tournament_times = []
+
         for tournament_nr in xrange(tournaments_to_play):
-            # TODO: Implement timing to calculate statistics about  how long each game took, average time
+            # TODO: Issue #3, Implement timing to calculate statistics about  how long each game took, average time
+
+            # FIXME: Bug at sdfdkfjdkfjdkfj
+
+            # BUG: sdasdsdsdsd
+
+
 
             # Let bots play round robin tournament
             for p1, p2 in itertools.combinations(bot_paths, 2):
                 #print "Game nr [%d]: %s vs. %s" % (game_nr, a, b)
+
+                starttime = time.time()
 
                 #command = ['SpaceInvadersDuel', '-o', 'player1', '-t', 'player2']
                 command = ['SpaceInvadersDuel', '-o', p1, '-t', p2]
@@ -267,11 +292,24 @@ def main(args, skipTournament=True, tournaments_to_play=3, wait_for_user_input=F
                 while prc.poll() == None:
                     pass
 
-    calculateStats()
+                # save time of how long the current gamed took to play and finish
+                tournament_times.append(time.time() - starttime)
+
+        # display tournament times
+        print tournament_times
+
+    pleaseExit = False
+
+    if pleaseExit:
+        exit(0)
+
+    calculateStats(tournament_times)
 
 
 # Check if this script is called as the main module
 if __name__ == '__main__':
+
+    # TODO: Issue #1, Implement better argument handling and usage display
 
     # Test number of arguments provided from the shell
     if (len(sys.argv) < 2):
